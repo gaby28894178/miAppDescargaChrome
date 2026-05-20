@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 380px; font-family: 'Segoe UI', Arial, sans-serif; padding: 12px; margin: 0; background-color: #1e1e24; color: #fff; }
+    h3 { margin-top: 0; color: #00adb5; border-bottom: 2px solid #00adb5; padding-bottom: 5px; font-size: 16px; }
+    #preview-container { display: flex; gap: 10px; background: #2a2a35; padding: 10px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #3f3f51; }
+    #mini-img { width: 120px; height: 68px; object-fit: cover; border-radius: 4px; background: #111; }
+    #video-titulo { font-size: 12px; font-weight: bold; margin: 0; color: #eeeeee; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .video-item { background: #2a2a35; padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #00adb5; }
+    .tipo { font-weight: bold; color: #00adb5; display: block; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; }
+    .url-text { color: #aaaaaa; font-size: 10px; word-break: break-all; margin-bottom: 8px; max-height: 32px; overflow: hidden; }
+    .btn-group { display: flex; gap: 8px; }
+    button { flex: 1; padding: 6px; border: none; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer; transition: background 0.2s; }
+    .btn-descargar { background-color: #00adb5; color: #fff; }
+    .btn-descargar:hover { background-color: #008c95; }
+    .btn-copiar { background-color: #3f3f51; color: #eee; }
+    .btn-copiar:hover { background-color: #4e4e63; }
+    .vacio { color: #888; font-style: italic; text-align: center; padding: 15px 0; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h3>🎥 Radar de Video Pro</h3>
+  <div id="preview-container">
+    <img id="mini-img" src="icono.png" alt="Miniatura">
+    <div>
+      <p id="video-titulo">Detectando reproducción actual...</p>
+    </div>
+  </div>
+  <div id="lista-videos">
+    <div class="vacio">Reproduce un video para capturar los flujos de descarga...</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

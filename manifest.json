@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Descargador Universal Automático",
+  "version": "2.1",
+  "description": "Descarga videos de YouTube como MP4 reproducible usando yt-dlp portable.",
+  "permissions": [
+    "webRequest",
+    "activeTab",
+    "storage",
+    "downloads",
+    "tabs",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icono.png"
+  },
+  "icons": {
+    "16": "icono.png",
+    "48": "icono.png",
+    "128": "icono.png"
+  }
+}

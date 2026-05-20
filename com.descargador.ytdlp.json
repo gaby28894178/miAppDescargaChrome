@@ -1,0 +1,9 @@
+{
+  "name": "com.descargador.ytdlp",
+  "description": "Native host para descargar videos con yt-dlp",
+  "path": "C:\\Users\\PC\\Desktop\\extencion chrome mia\\native_host.bat",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://likcmgndkaccoeadppmfkonddfmcclgp/"
+  ]
+}
