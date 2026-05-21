@@ -1,3 +1,6 @@
-# Archivos exe grandes - usar unziper.bat para reconstruirlos
+# Archivos exe grandes - usar unziper.bat para reconstruirlos desde los .zip
 ffmpeg.exe
 yt-dlp.exe
+
+# El zip completo se reconstruye desde las partes (.001, .002)
+ffmpeg.zip
