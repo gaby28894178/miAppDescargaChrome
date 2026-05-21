@@ -4,8 +4,6 @@ import struct
 import subprocess
 import os
 import shutil
-import zipfile
-import math
 
 def get_message():
     raw_length = sys.stdin.buffer.read(4)

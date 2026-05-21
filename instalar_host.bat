@@ -11,6 +11,36 @@ set "HOST_DIR=%~dp0"
 set "HOST_DIR=%HOST_DIR:~0,-1%"
 
 :: ============================================
+:: PASO 0: Reconstruir exe desde zips si no existen
+:: ============================================
+if not exist "%HOST_DIR%\ffmpeg.exe" (
+    if exist "%HOST_DIR%\ffmpeg.zip.001" (
+        echo [*] Reconstruyendo ffmpeg.exe desde partes comprimidas...
+        copy /b "%HOST_DIR%\ffmpeg.zip.001"+"%HOST_DIR%\ffmpeg.zip.002" "%HOST_DIR%\ffmpeg.zip" >nul
+        powershell -Command "Expand-Archive -Path '%HOST_DIR%\ffmpeg.zip' -DestinationPath '%HOST_DIR%' -Force" 2>nul
+        del "%HOST_DIR%\ffmpeg.zip" >nul 2>nul
+        if exist "%HOST_DIR%\ffmpeg.exe" (
+            echo   [OK] ffmpeg.exe reconstruido
+        ) else (
+            echo   [ERROR] No se pudo reconstruir ffmpeg.exe
+        )
+    )
+)
+
+if not exist "%HOST_DIR%\yt-dlp.exe" (
+    if exist "%HOST_DIR%\yt-dlp.zip" (
+        echo [*] Extrayendo yt-dlp.exe...
+        powershell -Command "Expand-Archive -Path '%HOST_DIR%\yt-dlp.zip' -DestinationPath '%HOST_DIR%' -Force" 2>nul
+        if exist "%HOST_DIR%\yt-dlp.exe" (
+            echo   [OK] yt-dlp.exe extraido
+        ) else (
+            echo   [ERROR] No se pudo extraer yt-dlp.exe
+        )
+    )
+)
+echo.
+
+:: ============================================
 :: PASO 1: Verificar/Instalar Python
 :: ============================================
 echo [1/5] Verificando Python...
