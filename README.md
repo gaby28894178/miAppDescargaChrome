@@ -15,8 +15,9 @@ Extensión de Google Chrome que permite descargar videos de **YouTube** y **Twit
 - ⏱️ **Duración visible** — Muestra el tiempo del video en los botones de formato
 - 🖼️ **Miniatura automática** — Preview del video de YouTube directamente en el popup
 - 🔒 **ID fijo** — La extensión mantiene su ID sin importar dónde esté la carpeta
-- 🚀 **Instalación automática** — El instalador detecta la ruta y configura todo sin intervención
+- 🚀 **Instalación automática** — El instalador detecta la ruta, reconstruye los exe y configura todo sin intervención
 - 🎨 **Interfaz moderna** — Diseño glassmorphism con gradientes y animaciones
+- 📦 **Compresión inteligente** — Los exe grandes se almacenan comprimidos en partes para GitHub
 
 ---
 
@@ -27,7 +28,7 @@ Extensión de Google Chrome que permite descargar videos de **YouTube** y **Twit
 │  📡 Radar de Video Pro                  │
 │  ┌──────┐                               │
 │  │ 🖼️  │  Título del video...          │
-│  └──────┘                               │
+│  └──────┘  🕐 4:32                      │
 │                                          │
 │  ¡Video Detectado!                       │
 │                                          │
@@ -56,12 +57,17 @@ extencion chrome mia/
 ├── native_host.py             # Script Python que ejecuta yt-dlp (MP4 y MP3)
 ├── native_host.bat            # Lanzador del script Python
 ├── com.descargador.ytdlp.json # Manifiesto del Native Messaging Host (auto-generado)
-├── instalar_host.bat          # Instalador automático (detecta ruta, registra host)
-├── yt-dlp.exe                 # Descargador de video portable
-├── ffmpeg.exe                 # Codificador de video/audio portable
+├── instalar_host.bat          # Instalador automático completo
+├── unziper.bat                # Reconstruye los exe desde los fragmentos comprimidos
+├── ffmpeg.zip.001             # Fragmento 1 de ffmpeg.exe comprimido (~35 MB)
+├── ffmpeg.zip.002             # Fragmento 2 de ffmpeg.exe comprimido (~35 MB)
+├── yt-dlp.zip                 # yt-dlp.exe comprimido (~17 MB)
 ├── icono.png                  # Ícono de la extensión
-└── icono.svg                  # Ícono vectorial
+├── icono.svg                  # Ícono vectorial
+└── .gitignore                 # Excluye los .exe del repositorio
 ```
+
+> ⚠️ Los archivos `ffmpeg.exe` (193 MB) y `yt-dlp.exe` (17 MB) **NO están en el repositorio** porque superan el límite de GitHub. Se reconstruyen automáticamente desde los `.zip` al instalar.
 
 ---
 
@@ -74,71 +80,99 @@ extencion chrome mia/
 | **Node.js** | Requerido por yt-dlp para descifrar videos protegidos |
 | **Windows** | El proyecto está configurado para Windows |
 
-> ⚠️ **Python** y **Node.js** deben estar instalados y accesibles desde el PATH del sistema.
+> ℹ️ Si no tienes Python o Node.js, el instalador intentará descargarlos e instalarlos automáticamente.
 
 ---
 
 ## 🚀 Instalación Paso a Paso
 
-### Paso 1: Descargar/Clonar el Proyecto
+### Paso 1: Clonar el Repositorio
 
 ```bash
-git clone https://github.com/TU_USUARIO/miAppDescargaChrome.git
+git clone https://github.com/gaby28894178/miAppDescargaChrome.git
 ```
 
-O descarga el ZIP y extráelo en cualquier carpeta.
-
-> ✅ **Puedes mover la carpeta libremente.** Solo vuelve a ejecutar `instalar_host.bat` después de moverla.
+O descarga el ZIP desde GitHub y extráelo en cualquier carpeta.
 
 ---
 
-### Paso 2: Cargar la Extensión en Chrome
+### Paso 2: Ejecutar el Instalador
 
-1. Abre Chrome y ve a `chrome://extensions/`
-2. Activa el **Modo desarrollador** (esquina superior derecha)
-3. Haz clic en **"Cargar descomprimida"**
-4. Selecciona la carpeta del proyecto
-
-```
-chrome://extensions/ → Modo desarrollador → Cargar descomprimida
-```
-
-> ℹ️ El ID de la extensión es fijo (`bmenjglifbckojodomkkbaoknjhejdbd`) gracias a la `key` en el manifest. No necesitas configurar nada manualmente.
-
----
-
-### Paso 3: Ejecutar el Instalador
-
-Haz doble clic (o clic derecho → Ejecutar como administrador) en:
+Haz doble clic en:
 
 ```
 instalar_host.bat
 ```
 
-El instalador hace todo automáticamente:
-- Detecta la ruta actual de la carpeta
-- Genera el archivo `com.descargador.ytdlp.json` con las rutas correctas
-- Registra el Native Messaging Host en Windows
+**El instalador hace TODO automáticamente:**
 
-**No requiere intervención del usuario.**
+1. **Reconstruye los ejecutables** — Une los fragmentos `ffmpeg.zip.001` + `ffmpeg.zip.002` → `ffmpeg.zip` → extrae `ffmpeg.exe`. Extrae `yt-dlp.exe` desde `yt-dlp.zip`.
+2. **Verifica/Instala Python** — Si no está instalado, lo descarga e instala con PATH configurado.
+3. **Verifica/Instala Node.js** — Si no está instalado, lo descarga e instala silenciosamente.
+4. **Verifica yt-dlp y ffmpeg** — Si por alguna razón no se reconstruyeron, los descarga de internet.
+5. **Genera la configuración** — Crea `com.descargador.ytdlp.json` con las rutas correctas de esta PC.
+6. **Registra el Native Host** — Agrega la entrada en el registro de Windows para que Chrome lo encuentre.
+7. **Abre Chrome en `chrome://extensions/`** — Al finalizar, abre el navegador directamente en la página de extensiones.
+
+**No requiere intervención del usuario. Solo ejecutar y esperar.**
 
 ---
 
-### Paso 4: Verificar Python y Node.js
+### Paso 3: Cargar la Extensión en Chrome (único paso manual)
 
-Abre una terminal y verifica:
+Después de que el instalador abra Chrome en `chrome://extensions/`:
 
-```bash
-python --version
-# Debe mostrar Python 3.x
+1. Activa el **Modo desarrollador** (esquina superior derecha)
+2. Haz clic en **"Cargar descomprimida"**
+3. Selecciona la carpeta del proyecto
+4. Listo
 
-node --version
-# Debe mostrar v18+ o superior
+> ℹ️ Chrome no permite instalar extensiones de forma automática por seguridad. Este es el único paso que requiere acción manual.
+> 
+> El ID de la extensión es siempre `bmenjglifbckojodomkkbaoknjhejdbd` gracias a la `key` fija en el manifest. No necesitas configurar nada más.
+
+---
+
+### (Opcional) Descompresión Manual con unziper.bat
+
+Si prefieres reconstruir los exe por separado antes de instalar:
+
+```
+unziper.bat
 ```
 
-Si no están instalados:
-- **Python:** https://www.python.org/downloads/
-- **Node.js:** https://nodejs.org/
+Este script:
+1. Une `ffmpeg.zip.001` + `ffmpeg.zip.002` → `ffmpeg.zip`
+2. Extrae `ffmpeg.exe` desde `ffmpeg.zip`
+3. Extrae `yt-dlp.exe` desde `yt-dlp.zip`
+4. Elimina el zip temporal
+
+Después ejecuta `instalar_host.bat` para completar la configuración.
+
+---
+
+## 📦 ¿Por qué los exe están en fragmentos?
+
+GitHub tiene un **límite de 100 MB por archivo**. Como `ffmpeg.exe` pesa 193 MB, no se puede subir directamente. La solución:
+
+```
+ffmpeg.exe (193 MB)
+    ↓ comprimir con ZIP
+ffmpeg.zip (70 MB)
+    ↓ partir en fragmentos de 35 MB
+ffmpeg.zip.001 (35 MB) ← se sube a Git
+ffmpeg.zip.002 (35 MB) ← se sube a Git
+```
+
+Al instalar, el proceso inverso ocurre automáticamente:
+
+```
+ffmpeg.zip.001 + ffmpeg.zip.002
+    ↓ unir (copy /b)
+ffmpeg.zip (70 MB)
+    ↓ extraer
+ffmpeg.exe (193 MB) ← listo para usar
+```
 
 ---
 
@@ -153,6 +187,7 @@ Si no están instalados:
 5. Presiona **"Descargar"**
 6. Espera a que yt-dlp procese el archivo
 7. El archivo se guardará en tu carpeta **Descargas** (`~/Downloads`)
+8. Puedes descargar ambos formatos del mismo video sin cerrar el popup
 
 ---
 
@@ -194,8 +229,10 @@ Si no están instalados:
 | yt-dlp no descarga | Verifica que Node.js esté instalado (`node --version`) |
 | No aparece el botón | Asegúrate de estar en `youtube.com/watch` o `twitch.tv` |
 | Error de permisos | Ejecuta `instalar_host.bat` como administrador |
-| Moviste la carpeta | Solo ejecuta `instalar_host.bat` de nuevo, detecta la ruta automáticamente |
-| ID de extensión cambió | No debería pasar. La key fija en manifest.json garantiza el mismo ID siempre |
+| Moviste la carpeta | Solo ejecuta `instalar_host.bat` de nuevo |
+| ffmpeg.exe no aparece | Ejecuta `unziper.bat` o `instalar_host.bat` |
+| "No se encontró yt-dlp.exe" | Ejecuta `unziper.bat` para extraerlo desde yt-dlp.zip |
+| El push a Git falla por tamaño | Los .exe están en .gitignore, no deben subirse |
 
 ---
 
@@ -209,7 +246,8 @@ Si no están instalados:
 - **yt-dlp** formato MP4: `bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]` (mejor video + mejor audio)
 - **yt-dlp** formato MP3: `-x --audio-format mp3 --audio-quality 0` (máxima calidad audio)
 - **ffmpeg** incluido de forma portable para merge/conversión de streams
-- **Instalador automático** que detecta la ruta con `%~dp0` y genera el JSON dinámicamente
+- **Compresión en partes** para cumplir con el límite de 100 MB de GitHub
+- **Instalador automático** que reconstruye exe, instala dependencias y registra el host
 - Los archivos se descargan sin partes temporales (`--no-part`)
 - No descarga playlists (`--no-playlist`)
 - **Font Awesome 6.4** para iconografía moderna

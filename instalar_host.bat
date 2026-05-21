@@ -285,17 +285,20 @@ echo   Ruta: %HOST_DIR%
 echo   ID extension: bmenjglifbckojodomkkbaoknjhejdbd
 echo.
 echo ============================================
-echo   COMO USAR:
+echo   ULTIMO PASO (unico paso manual):
 echo ============================================
 echo.
-echo   1. Abre Chrome
-echo   2. Ve a chrome://extensions/
-echo   3. Activa "Modo desarrollador" (arriba a la derecha)
-echo   4. Clic en "Cargar descomprimida"
-echo   5. Selecciona esta carpeta:
-echo      %HOST_DIR%
-echo   6. Navega a YouTube y haz clic en el icono de la extension
+echo   Se abrira Chrome en la pagina de extensiones.
+echo   Solo haz esto:
+echo     1. Activa "Modo desarrollador" (arriba a la derecha)
+echo     2. Clic en "Cargar descomprimida"
+echo     3. Selecciona esta carpeta:
+echo        %HOST_DIR%
 echo.
 echo   Si ya tenias la extension cargada, solo reinicia Chrome.
 echo.
-pause
+echo Presiona una tecla para abrir Chrome en extensiones...
+pause >nul
+
+:: Abrir Chrome en la pagina de extensiones
+start "" "chrome" "chrome://extensions/"
