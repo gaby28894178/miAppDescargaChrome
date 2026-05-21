@@ -1,6 +1,6 @@
 # 🎥 Descargador Universal Automático - Extensión Chrome
 
-Extensión de Google Chrome que permite descargar videos de **YouTube** y **Twitch** como archivos MP4 completos (video + audio) usando **yt-dlp** de forma portable, sin necesidad de instalar programas adicionales en el sistema.
+Extensión de Google Chrome que permite descargar videos de **YouTube** y **Twitch** como archivos **MP4** (video + audio) o **MP3** (solo audio) usando **yt-dlp** de forma portable, sin necesidad de instalar programas adicionales en el sistema.
 
 ![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green?logo=googlechrome&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
@@ -8,24 +8,39 @@ Extensión de Google Chrome que permite descargar videos de **YouTube** y **Twit
 
 ---
 
+## ✨ Características
+
+- 🎬 **Descarga MP4** — Video completo con audio en máxima calidad
+- 🎵 **Descarga MP3** — Extrae solo el audio en calidad máxima
+- ⏱️ **Duración visible** — Muestra el tiempo del video en los botones de formato
+- 🖼️ **Miniatura automática** — Preview del video de YouTube directamente en el popup
+- 🔒 **ID fijo** — La extensión mantiene su ID sin importar dónde esté la carpeta
+- 🚀 **Instalación automática** — El instalador detecta la ruta y configura todo sin intervención
+- 🎨 **Interfaz moderna** — Diseño glassmorphism con gradientes y animaciones
+
+---
+
 ## 📸 Vista Previa
 
 ```
-┌─────────────────────────────────────┐
-│  🎥 Radar de Video Pro             │
-│  ┌──────┐                          │
-│  │ 🖼️  │  Título del video...     │
-│  └──────┘                          │
-│                                     │
-│  ¡Video Detectado!                  │
-│  Se descargará como MP4 completo    │
-│  con audio usando yt-dlp portable.  │
-│                                     │
-│  ┌─────────────────────────────┐   │
-│  │ 📥 Descargar MP4 Completo  │   │
-│  │      (con audio)            │   │
-│  └─────────────────────────────┘   │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  📡 Radar de Video Pro                  │
+│  ┌──────┐                               │
+│  │ 🖼️  │  Título del video...          │
+│  └──────┘                               │
+│                                          │
+│  ¡Video Detectado!                       │
+│                                          │
+│  ┌───────────────┐ ┌───────────────┐    │
+│  │   🎬 MP4     │ │   🎵 MP3     │    │
+│  │ Video + Audio │ │  Solo Audio   │    │
+│  │   🕐 4:32    │ │   🕐 4:32    │    │
+│  └───────────────┘ └───────────────┘    │
+│                                          │
+│  ┌─────────────────────────────────┐    │
+│  │   ⬇️  Descargar MP4            │    │
+│  └─────────────────────────────────┘    │
+└─────────────────────────────────────────┘
 ```
 
 ---
@@ -34,14 +49,14 @@ Extensión de Google Chrome que permite descargar videos de **YouTube** y **Twit
 
 ```
 extencion chrome mia/
-├── manifest.json              # Configuración de la extensión (Manifest V3)
-├── popup.html                 # Interfaz visual del popup
-├── popup.js                   # Lógica del popup (detecta videos, botón descargar)
+├── manifest.json              # Configuración de la extensión (Manifest V3 + key fija)
+├── popup.html                 # Interfaz visual del popup (diseño glassmorphism)
+├── popup.js                   # Lógica del popup (selector formato, duración, descarga)
 ├── background.js              # Service Worker (intercepta flujos, Native Messaging)
-├── native_host.py             # Script Python que ejecuta yt-dlp
+├── native_host.py             # Script Python que ejecuta yt-dlp (MP4 y MP3)
 ├── native_host.bat            # Lanzador del script Python
-├── com.descargador.ytdlp.json # Manifiesto del Native Messaging Host
-├── instalar_host.bat          # Script para registrar el host en Windows
+├── com.descargador.ytdlp.json # Manifiesto del Native Messaging Host (auto-generado)
+├── instalar_host.bat          # Instalador automático (detecta ruta, registra host)
 ├── yt-dlp.exe                 # Descargador de video portable
 ├── ffmpeg.exe                 # Codificador de video/audio portable
 ├── icono.png                  # Ícono de la extensión
@@ -71,9 +86,9 @@ extencion chrome mia/
 git clone https://github.com/TU_USUARIO/miAppDescargaChrome.git
 ```
 
-O descarga el ZIP y extráelo en una carpeta fija (ej: `C:\Users\PC\Desktop\extencion chrome mia\`).
+O descarga el ZIP y extráelo en cualquier carpeta.
 
-> ⚠️ **IMPORTANTE:** La carpeta NO debe moverse después de la instalación, ya que las rutas quedan registradas.
+> ✅ **Puedes mover la carpeta libremente.** Solo vuelve a ejecutar `instalar_host.bat` después de moverla.
 
 ---
 
@@ -88,46 +103,28 @@ O descarga el ZIP y extráelo en una carpeta fija (ej: `C:\Users\PC\Desktop\exte
 chrome://extensions/ → Modo desarrollador → Cargar descomprimida
 ```
 
-5. **Copia el ID de la extensión** (aparece debajo del nombre, ej: `likcmgndkaccoeadppmfkonddfmcclgp`)
+> ℹ️ El ID de la extensión es fijo (`bmenjglifbckojodomkkbaoknjhejdbd`) gracias a la `key` en el manifest. No necesitas configurar nada manualmente.
 
 ---
 
-### Paso 3: Configurar el ID de la Extensión
+### Paso 3: Ejecutar el Instalador
 
-Abre el archivo `com.descargador.ytdlp.json` y verifica que el ID coincida con el de tu extensión:
-
-```json
-{
-  "name": "com.descargador.ytdlp",
-  "description": "Native host para descargar videos con yt-dlp",
-  "path": "C:\\Users\\PC\\Desktop\\extencion chrome mia\\native_host.bat",
-  "type": "stdio",
-  "allowed_origins": [
-    "chrome-extension://TU_EXTENSION_ID_AQUI/"
-  ]
-}
-```
-
-Reemplaza `TU_EXTENSION_ID_AQUI` con el ID real que copiaste en el paso anterior.
-
----
-
-### Paso 4: Registrar el Native Messaging Host
-
-Ejecuta como **administrador** el archivo:
+Haz doble clic (o clic derecho → Ejecutar como administrador) en:
 
 ```
 instalar_host.bat
 ```
 
-Esto registra la clave en el registro de Windows:
-```
-HKCU\Software\Google\Chrome\NativeMessagingHosts\com.descargador.ytdlp
-```
+El instalador hace todo automáticamente:
+- Detecta la ruta actual de la carpeta
+- Genera el archivo `com.descargador.ytdlp.json` con las rutas correctas
+- Registra el Native Messaging Host en Windows
+
+**No requiere intervención del usuario.**
 
 ---
 
-### Paso 5: Verificar Python y Node.js
+### Paso 4: Verificar Python y Node.js
 
 Abre una terminal y verifica:
 
@@ -148,11 +145,14 @@ Si no están instalados:
 ## 🎮 Uso
 
 1. Navega a un video de **YouTube** o **Twitch**
-2. Haz clic en el ícono de la extensión (🎥)
-3. Se mostrará la miniatura y título del video
-4. Presiona **"📥 Descargar MP4 Completo (con audio)"**
-5. Espera a que yt-dlp descargue y combine video+audio
-6. El archivo `.mp4` se guardará en tu carpeta **Descargas** (`~/Downloads`)
+2. Haz clic en el ícono de la extensión (📡)
+3. Se mostrará la miniatura, título y **duración** del video
+4. Selecciona el formato:
+   - **MP4** — Video completo con audio
+   - **MP3** — Solo audio en máxima calidad
+5. Presiona **"Descargar"**
+6. Espera a que yt-dlp procese el archivo
+7. El archivo se guardará en tu carpeta **Descargas** (`~/Downloads`)
 
 ---
 
@@ -171,13 +171,16 @@ Si no están instalados:
                                                └────────────────┘
                                                         │
                                                         ▼
-                                               📁 ~/Downloads/video.mp4
+                                            📁 ~/Downloads/video.mp4
+                                            📁 ~/Downloads/video.mp3
 ```
 
-1. **popup.js** detecta si estás en YouTube/Twitch y muestra el botón
-2. Al hacer clic, envía un mensaje al **background.js**
+1. **popup.js** detecta si estás en YouTube/Twitch, obtiene la duración del video y muestra el selector de formato
+2. Al hacer clic en descargar, envía el formato elegido (mp4/mp3) al **background.js**
 3. **background.js** se comunica con **native_host.py** vía Native Messaging
-4. **native_host.py** ejecuta **yt-dlp.exe** con **ffmpeg.exe** para descargar y combinar
+4. **native_host.py** ejecuta **yt-dlp.exe** con los argumentos según el formato:
+   - MP4: `-f bv*[ext=mp4]+ba[ext=m4a] --merge-output-format mp4`
+   - MP3: `-x --audio-format mp3 --audio-quality 0`
 5. El resultado se guarda en la carpeta Descargas
 
 ---
@@ -186,22 +189,31 @@ Si no están instalados:
 
 | Problema | Solución |
 |----------|----------|
-| "Error al conectar con native host" | Ejecuta `instalar_host.bat` y verifica el ID en el JSON |
+| "Specified native messaging host not found" | Ejecuta `instalar_host.bat` de nuevo |
 | "Timeout: video muy largo" | Videos de más de 10 min pueden tardar, el timeout es de 600s |
 | yt-dlp no descarga | Verifica que Node.js esté instalado (`node --version`) |
 | No aparece el botón | Asegúrate de estar en `youtube.com/watch` o `twitch.tv` |
 | Error de permisos | Ejecuta `instalar_host.bat` como administrador |
+| Moviste la carpeta | Solo ejecuta `instalar_host.bat` de nuevo, detecta la ruta automáticamente |
+| ID de extensión cambió | No debería pasar. La key fija en manifest.json garantiza el mismo ID siempre |
 
 ---
 
 ## 📋 Notas Técnicas
 
 - **Manifest V3** con Service Worker (no background page)
+- **Key fija** en manifest.json para ID de extensión permanente
 - **Native Messaging** para comunicación Chrome ↔ Python
-- **yt-dlp** formato: `bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]` (mejor video + mejor audio)
-- **ffmpeg** incluido de forma portable para merge de streams
+- **Selector de formato** MP4/MP3 con duración visible
+- **Duración del video** obtenida via `chrome.scripting` desde el elemento `<video>` de la página
+- **yt-dlp** formato MP4: `bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]` (mejor video + mejor audio)
+- **yt-dlp** formato MP3: `-x --audio-format mp3 --audio-quality 0` (máxima calidad audio)
+- **ffmpeg** incluido de forma portable para merge/conversión de streams
+- **Instalador automático** que detecta la ruta con `%~dp0` y genera el JSON dinámicamente
 - Los archivos se descargan sin partes temporales (`--no-part`)
 - No descarga playlists (`--no-playlist`)
+- **Font Awesome 6.4** para iconografía moderna
+- **Diseño glassmorphism** con backdrop-filter y gradientes
 
 ---
 

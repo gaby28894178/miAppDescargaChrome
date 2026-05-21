@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Descargador Universal Automático",
+  "key": "104R2OIAIdvT8g66W+4FMMpCvxF7Zqx9NgS6lC6FmM7ZMvvg3uTJNcEIGXxfrQ6rvmVJQexwyrKCAUHvl2SDY7pskNv+oxxVpgSjsmR6iu3RsICF8PsrvOlWDSHd/nAq7G3SV+vEqTunhh8k09pHRshLsntTomdQkIlSU42f6cCHgKavmBpHJsFGFAiBwQd1lhojvemU15BXjLXNwZpfW0v6jMHSKs57yP/+ZYmwLCoDgE4oXFguFCoOUSsLkby5wAF+dnOt0YZjQkpQXlJaItO/cwbwmiASlBh9TzWQpwsj2VONuz43vr1a3PzwiU6jJpONNVRrPsIEeEKbOBDJDAe5L1yXxehgHahCxBj+vX9eMrXHjGeexRYbpeMvoMgcSXPXqjSf",
   "version": "2.1",
   "description": "Descarga videos de YouTube como MP4 reproducible usando yt-dlp portable.",
   "permissions": [
@@ -9,7 +10,8 @@
     "storage",
     "downloads",
     "tabs",
-    "nativeMessaging"
+    "nativeMessaging",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"

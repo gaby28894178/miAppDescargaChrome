@@ -2,34 +2,332 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { width: 380px; font-family: 'Segoe UI', Arial, sans-serif; padding: 12px; margin: 0; background-color: #1e1e24; color: #fff; }
-    h3 { margin-top: 0; color: #00adb5; border-bottom: 2px solid #00adb5; padding-bottom: 5px; font-size: 16px; }
-    #preview-container { display: flex; gap: 10px; background: #2a2a35; padding: 10px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #3f3f51; }
-    #mini-img { width: 120px; height: 68px; object-fit: cover; border-radius: 4px; background: #111; }
-    #video-titulo { font-size: 12px; font-weight: bold; margin: 0; color: #eeeeee; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .video-item { background: #2a2a35; padding: 10px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #00adb5; }
-    .tipo { font-weight: bold; color: #00adb5; display: block; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; }
-    .url-text { color: #aaaaaa; font-size: 10px; word-break: break-all; margin-bottom: 8px; max-height: 32px; overflow: hidden; }
-    .btn-group { display: flex; gap: 8px; }
-    button { flex: 1; padding: 6px; border: none; border-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer; transition: background 0.2s; }
-    .btn-descargar { background-color: #00adb5; color: #fff; }
-    .btn-descargar:hover { background-color: #008c95; }
-    .btn-copiar { background-color: #3f3f51; color: #eee; }
-    .btn-copiar:hover { background-color: #4e4e63; }
-    .vacio { color: #888; font-style: italic; text-align: center; padding: 15px 0; font-size: 12px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      padding: 16px;
+      margin: 0;
+      background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+      color: #f0f0f0;
+    }
+
+    h3 {
+      margin: 0 0 16px 0;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.3px;
+    }
+
+    h3 i {
+      font-size: 20px;
+      color: #fafdfd;
+    }
+
+    #preview-container {
+      display: flex;
+      gap: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 12px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(91, 192, 190, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .img-placeholder {
+      width: 130px;
+      height: 73px;
+      background: rgba(91, 192, 190, 0.1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+
+    .img-placeholder i {
+      font-size: 32px;
+      color: #f0f3f3;
+      opacity: 0.5;
+    }
+
+    #mini-img {
+      width: 130px;
+      height: 73px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #0a0a0f;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: none;
+      flex-shrink: 0;
+    }
+
+    #video-titulo {
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0;
+      color: #e8e8e8;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    #video-duracion {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f79c34;
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #video-duracion i {
+      font-size: 18px;
+    }
+
+    .video-item {
+      background: rgba(30, 30, 40, 0.7);
+      backdrop-filter: blur(5px);
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      border-left: 3px solid #f5f8f8;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+
+    .video-item:hover {
+      background: rgba(40, 40, 52, 0.8);
+      transform: translateX(2px);
+    }
+
+    .tipo {
+      font-weight: 600;
+      color: #5bc0be;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(91, 192, 190, 0.1);
+      padding: 4px 10px;
+      border-radius: 20px;
+      width: fit-content;
+    }
+
+    .tipo i {
+      font-size: 11px;
+    }
+
+    .url-text {
+      color: #9a9ab0;
+      font-size: 10px;
+      font-family: 'Monaco', 'Consolas', monospace;
+      word-break: break-all;
+      margin-bottom: 12px;
+      padding: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      line-height: 1.4;
+      max-height: 40px;
+      overflow-y: auto;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1;
+      padding: 8px 6px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+
+    .btn-descargar {
+      background: linear-gradient(135deg, #5bc0be 0%, #3a8f8d 100%);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(91, 192, 190, 0.3);
+    }
+
+    .btn-descargar:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(91, 192, 190, 0.4);
+    }
+
+    .btn-descargar:disabled {
+      opacity: 0.7;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .btn-copiar {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ddd;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-copiar:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .vacio {
+      color: #6a6a85;
+      font-style: normal;
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .vacio i {
+      font-size: 20px;
+      opacity: 0.5;
+    }
+
+    #status-msg {
+      font-size: 11px;
+      color: #9a9ab0;
+      margin-top: 6px;
+    }
+
+    .format-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .format-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #9a9ab0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .format-btn:hover {
+      border-color: rgba(91, 192, 190, 0.4);
+      background: rgba(91, 192, 190, 0.05);
+    }
+
+    .format-btn.active {
+      border-color: #5bc0be;
+      background: rgb(165, 155, 17);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(223, 230, 229, 0.2);
+    }
+
+    .format-btn i {
+      font-size: 18px;
+    }
+
+    .format-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .format-desc {
+      font-size: 9px;
+      opacity: 0.7;
+      font-weight: 400;
+    }
+
+    .format-duration {
+      font-size: 10px;
+      font-weight: 600;
+      color: #f0f0f0;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 3px 8px;
+      border-radius: 10px;
+      margin-top: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .format-duration i {
+      font-size: 9px;
+      opacity: 0.8;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #5bc0be;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
-  <h3>🎥 Radar de Video Pro</h3>
+  <h3>
+    <i class="fas fa-satellite-dish"></i>
+    LEER DESCARGA
+  </h3>
   <div id="preview-container">
-    <img id="mini-img" src="icono.png" alt="Miniatura">
+    <div class="img-placeholder" id="img-placeholder">
+      <i class="fas fa-film"></i>
+    </div>
+    <img id="mini-img" src="" alt="Miniatura">
     <div>
       <p id="video-titulo">Detectando reproducción actual...</p>
+      <div id="video-duracion" style="display: none;"><i class="fas fa-clock"></i> <span id="duracion-texto"></span></div>
     </div>
   </div>
   <div id="lista-videos">
-    <div class="vacio">Reproduce un video para capturar los flujos de descarga...</div>
+    <div class="vacio">
+      <i class="fas fa-play-circle"></i>
+      Reproduce un video para capturar los flujos
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>
