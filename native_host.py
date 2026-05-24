@@ -120,10 +120,17 @@ def main():
         # Buscar Node.js
         node_dir = find_node()
         
-        # Configurar entorno
+        # Configurar entorno con Node.js siempre disponible
         env = os.environ.copy()
+        # Agregar rutas comunes de Node.js al PATH por si el proceso no las hereda
+        extra_paths = []
         if node_dir:
-            env['PATH'] = node_dir + ';' + env.get('PATH', '')
+            extra_paths.append(node_dir)
+        extra_paths.extend([
+            r'C:\Program Files\nodejs',
+            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Programs', 'nodejs'),
+        ])
+        env['PATH'] = ';'.join(extra_paths) + ';' + env.get('PATH', '')
         
         # Generar nombre de archivo único
         ext = 'mp3' if formato == 'mp3' else 'mp4'
@@ -154,10 +161,9 @@ def main():
                     url
                 ]
             
-            # Agregar Node.js solo si se encontró
-            if node_dir:
-                cmd.insert(3, '--js-runtimes')
-                cmd.insert(4, 'nodejs')
+            # Agregar Node.js como runtime disponible
+            cmd.insert(3, '--js-runtimes')
+            cmd.insert(4, 'nodejs')
             
             result = subprocess.run(
                 cmd,
@@ -174,8 +180,6 @@ def main():
                 # Dar pistas útiles sobre errores comunes
                 if 'unable to extract' in error_msg.lower() or 'nsig' in error_msg.lower():
                     error_msg += ' | Posible solución: actualiza yt-dlp.exe'
-                elif 'node' in error_msg.lower() or 'javascript' in error_msg.lower():
-                    error_msg = 'Node.js no encontrado. Instálalo desde nodejs.org'
                 send_message({'status': 'error', 'message': error_msg})
                 
         except subprocess.TimeoutExpired:

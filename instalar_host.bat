@@ -1,238 +1,246 @@
 @echo off
+setlocal EnableDelayedExpansion
 chcp 65001 >nul 2>nul
 title Instalador - Radar de Video Pro
-echo ============================================
-echo   Instalador Automatico - Radar de Video Pro
-echo ============================================
+cls
+echo.
+echo  ╔══════════════════════════════════════════════╗
+echo  ║   INSTALADOR AUTOMATICO                     ║
+echo  ║   Radar de Video Pro v2.1                   ║
+echo  ╚══════════════════════════════════════════════╝
 echo.
 
-:: Obtener la ruta de esta carpeta automaticamente (sin barra final)
+:: Obtener la ruta de esta carpeta
 set "HOST_DIR=%~dp0"
 set "HOST_DIR=%HOST_DIR:~0,-1%"
 
+:: Refrescar PATH con rutas comunes por si acaban de instalar algo
+set "PATH=C:\Program Files\nodejs;%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts;%LOCALAPPDATA%\Programs\Python\Python311;%LOCALAPPDATA%\Programs\Python\Python311\Scripts;C:\Python312;C:\Python311;C:\Python310;%PATH%"
+
+echo  [0/6] Preparando entorno...
+echo.
+
 :: ============================================
-:: PASO 0: Reconstruir exe desde zips si no existen
+:: PASO 1: Reconstruir exe desde zips
 :: ============================================
+echo  [1/6] Verificando ejecutables...
+
 if not exist "%HOST_DIR%\ffmpeg.exe" (
     if exist "%HOST_DIR%\ffmpeg.zip.001" (
-        echo [*] Reconstruyendo ffmpeg.exe desde partes comprimidas...
-        copy /b "%HOST_DIR%\ffmpeg.zip.001"+"%HOST_DIR%\ffmpeg.zip.002" "%HOST_DIR%\ffmpeg.zip" >nul
-        powershell -Command "Expand-Archive -Path '%HOST_DIR%\ffmpeg.zip' -DestinationPath '%HOST_DIR%' -Force" 2>nul
+        echo    [*] Uniendo partes de ffmpeg.zip...
+        copy /b "%HOST_DIR%\ffmpeg.zip.001"+"%HOST_DIR%\ffmpeg.zip.002" "%HOST_DIR%\ffmpeg.zip" >nul 2>nul
+        echo    [*] Extrayendo ffmpeg.exe...
+        powershell -NoProfile -Command "Expand-Archive -Path '%HOST_DIR%\ffmpeg.zip' -DestinationPath '%HOST_DIR%' -Force" 2>nul
         del "%HOST_DIR%\ffmpeg.zip" >nul 2>nul
         if exist "%HOST_DIR%\ffmpeg.exe" (
-            echo   [OK] ffmpeg.exe reconstruido
+            echo    [OK] ffmpeg.exe reconstruido desde partes
         ) else (
-            echo   [ERROR] No se pudo reconstruir ffmpeg.exe
+            echo    [!] No se pudo reconstruir, se descargara...
         )
     )
 )
 
 if not exist "%HOST_DIR%\yt-dlp.exe" (
     if exist "%HOST_DIR%\yt-dlp.zip" (
-        echo [*] Extrayendo yt-dlp.exe...
-        powershell -Command "Expand-Archive -Path '%HOST_DIR%\yt-dlp.zip' -DestinationPath '%HOST_DIR%' -Force" 2>nul
+        echo    [*] Extrayendo yt-dlp.exe...
+        powershell -NoProfile -Command "Expand-Archive -Path '%HOST_DIR%\yt-dlp.zip' -DestinationPath '%HOST_DIR%' -Force" 2>nul
         if exist "%HOST_DIR%\yt-dlp.exe" (
-            echo   [OK] yt-dlp.exe extraido
-        ) else (
-            echo   [ERROR] No se pudo extraer yt-dlp.exe
+            echo    [OK] yt-dlp.exe extraido
         )
     )
 )
+
+if exist "%HOST_DIR%\ffmpeg.exe" (
+    echo    [OK] ffmpeg.exe listo
+)
+if exist "%HOST_DIR%\yt-dlp.exe" (
+    echo    [OK] yt-dlp.exe listo
+)
+
+:: ============================================
+:: PASO 2: Python
+:: ============================================
 echo.
+echo  [2/6] Verificando Python...
 
-:: ============================================
-:: PASO 1: Verificar/Instalar Python
-:: ============================================
-echo [1/5] Verificando Python...
+set "PYTHON_OK=0"
+where python >nul 2>nul && set "PYTHON_OK=1"
+if "!PYTHON_OK!"=="0" (
+    :: Buscar en rutas comunes
+    if exist "%LOCALAPPDATA%\Programs\Python\Python312\python.exe" (
+        set "PATH=%LOCALAPPDATA%\Programs\Python\Python312;%PATH%"
+        set "PYTHON_OK=1"
+    )
+    if exist "%LOCALAPPDATA%\Programs\Python\Python311\python.exe" (
+        set "PATH=%LOCALAPPDATA%\Programs\Python\Python311;%PATH%"
+        set "PYTHON_OK=1"
+    )
+    if exist "C:\Python312\python.exe" (
+        set "PATH=C:\Python312;%PATH%"
+        set "PYTHON_OK=1"
+    )
+    if exist "C:\Python311\python.exe" (
+        set "PATH=C:\Python311;%PATH%"
+        set "PYTHON_OK=1"
+    )
+)
 
-where python >nul 2>nul
-if %errorlevel% neq 0 (
-    echo   [!] Python no encontrado. Instalando...
-    echo   Descargando Python...
+if "!PYTHON_OK!"=="0" (
+    echo    [!] Python NO encontrado. Descargando e instalando...
     
-    :: Descargar Python usando bitsadmin (disponible en todo Windows)
     set "PYTHON_URL=https://www.python.org/ftp/python/3.12.4/python-3.12.4-amd64.exe"
     set "PYTHON_INSTALLER=%TEMP%\python_installer.exe"
     
-    bitsadmin /transfer "PythonDownload" /priority high "%PYTHON_URL%" "%PYTHON_INSTALLER%" >nul 2>nul
-    
-    if not exist "%PYTHON_INSTALLER%" (
-        echo   [!] Descarga con bitsadmin fallo. Intentando con curl...
-        curl -L -o "%PYTHON_INSTALLER%" "%PYTHON_URL%" 2>nul
+    curl -L -o "!PYTHON_INSTALLER!" "!PYTHON_URL!" 2>nul
+    if not exist "!PYTHON_INSTALLER!" (
+        bitsadmin /transfer "PythonDL" /priority high "!PYTHON_URL!" "!PYTHON_INSTALLER!" >nul 2>nul
     )
     
-    if not exist "%PYTHON_INSTALLER%" (
-        echo   [ERROR] No se pudo descargar Python.
-        echo           Descargalo manualmente: https://www.python.org/downloads/
-        echo           IMPORTANTE: Marca "Add Python to PATH" al instalar.
-        pause
-        exit /b 1
-    )
-    
-    echo   Instalando Python silenciosamente...
-    "%PYTHON_INSTALLER%" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0
-    
-    if %errorlevel% neq 0 (
-        echo   [!] Instalacion silenciosa fallo. Abriendo instalador manual...
-        echo       IMPORTANTE: Marca "Add Python to PATH" abajo del todo.
-        "%PYTHON_INSTALLER%"
-    )
-    
-    del "%PYTHON_INSTALLER%" >nul 2>nul
-    
-    :: Refrescar PATH
-    set "PATH=%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts;%PATH%"
-    
-    where python >nul 2>nul
-    if %errorlevel% neq 0 (
-        echo   [ERROR] Python sigue sin encontrarse en PATH.
-        echo           Reinicia el PC y ejecuta este instalador de nuevo.
+    if exist "!PYTHON_INSTALLER!" (
+        echo    [*] Instalando Python 3.12 ...
+        "!PYTHON_INSTALLER!" /quiet InstallAllUsers=0 PrependPath=1 Include_test=0
+        if !errorlevel! neq 0 (
+            echo    [!] Instalacion silenciosa fallo. Abriendo instalador...
+            echo        MARCA "Add Python to PATH" abajo del todo.
+            "!PYTHON_INSTALLER!"
+        )
+        del "!PYTHON_INSTALLER!" >nul 2>nul
+        set "PATH=%LOCALAPPDATA%\Programs\Python\Python312;%LOCALAPPDATA%\Programs\Python\Python312\Scripts;!PATH!"
+    ) else (
+        echo    [ERROR] No se pudo descargar Python.
+        echo            Instala manualmente: https://www.python.org/downloads/
+        echo            MARCA "Add Python to PATH" al instalar.
         pause
         exit /b 1
     )
 )
-echo   [OK] Python encontrado
+
+:: Verificacion final de Python
+where python >nul 2>nul
+if %errorlevel% neq 0 (
+    echo    [ERROR] Python no disponible en PATH.
+    echo            Reinicia el PC y ejecuta este instalador de nuevo.
+    pause
+    exit /b 1
+)
+for /f "tokens=*" %%v in ('python --version 2^>^&1') do echo    [OK] %%v
 
 :: ============================================
-:: PASO 2: Verificar/Instalar Node.js
+:: PASO 3: Node.js
 :: ============================================
 echo.
-echo [2/5] Verificando Node.js...
+echo  [3/6] Verificando Node.js...
 
-where node >nul 2>nul
-if %errorlevel% neq 0 (
-    echo   [!] Node.js no encontrado. Instalando...
+set "NODE_OK=0"
+where node >nul 2>nul && set "NODE_OK=1"
+if "!NODE_OK!"=="0" (
+    if exist "C:\Program Files\nodejs\node.exe" (
+        set "PATH=C:\Program Files\nodejs;!PATH!"
+        set "NODE_OK=1"
+    )
+)
+
+if "!NODE_OK!"=="0" (
+    echo    [!] Node.js NO encontrado. Descargando e instalando...
     
     set "NODE_URL=https://nodejs.org/dist/v20.15.0/node-v20.15.0-x64.msi"
     set "NODE_INSTALLER=%TEMP%\node_installer.msi"
     
-    echo   Descargando Node.js...
-    bitsadmin /transfer "NodeDownload" /priority high "%NODE_URL%" "%NODE_INSTALLER%" >nul 2>nul
-    
-    if not exist "%NODE_INSTALLER%" (
-        echo   [!] Descarga con bitsadmin fallo. Intentando con curl...
-        curl -L -o "%NODE_INSTALLER%" "%NODE_URL%" 2>nul
+    curl -L -o "!NODE_INSTALLER!" "!NODE_URL!" 2>nul
+    if not exist "!NODE_INSTALLER!" (
+        bitsadmin /transfer "NodeDL" /priority high "!NODE_URL!" "!NODE_INSTALLER!" >nul 2>nul
     )
     
-    if not exist "%NODE_INSTALLER%" (
-        echo   [ERROR] No se pudo descargar Node.js.
-        echo           Descargalo manualmente: https://nodejs.org/
+    if exist "!NODE_INSTALLER!" (
+        echo    [*] Instalando Node.js v20 ...
+        msiexec /i "!NODE_INSTALLER!" /qn /norestart
+        if !errorlevel! neq 0 (
+            echo    [!] Instalacion silenciosa fallo. Abriendo instalador...
+            msiexec /i "!NODE_INSTALLER!"
+        )
+        del "!NODE_INSTALLER!" >nul 2>nul
+        set "PATH=C:\Program Files\nodejs;!PATH!"
+    ) else (
+        echo    [ERROR] No se pudo descargar Node.js.
+        echo            Instala manualmente: https://nodejs.org/
         pause
         exit /b 1
     )
-    
-    echo   Instalando Node.js silenciosamente...
-    msiexec /i "%NODE_INSTALLER%" /qn /norestart
-    
-    if %errorlevel% neq 0 (
-        echo   [!] Instalacion silenciosa fallo. Abriendo instalador manual...
-        msiexec /i "%NODE_INSTALLER%"
-    )
-    
-    del "%NODE_INSTALLER%" >nul 2>nul
-    
-    :: Refrescar PATH
-    set "PATH=C:\Program Files\nodejs;%PATH%"
-    
-    where node >nul 2>nul
-    if %errorlevel% neq 0 (
-        echo   [AVISO] Node.js instalado pero requiere reiniciar.
-        echo           La extension funcionara despues de reiniciar el PC.
-    ) else (
-        echo   [OK] Node.js instalado correctamente
-    )
+)
+
+:: Verificacion final de Node
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo    [AVISO] Node.js instalado pero PATH no actualizado.
+    echo            Reinicia el PC para que funcione correctamente.
 ) else (
-    echo   [OK] Node.js encontrado
+    for /f "tokens=*" %%v in ('node --version 2^>^&1') do echo    [OK] Node.js %%v
 )
 
 :: ============================================
-:: PASO 3: Verificar/Descargar yt-dlp y ffmpeg
+:: PASO 4: Descargar yt-dlp y ffmpeg si faltan
 :: ============================================
 echo.
-echo [3/5] Verificando yt-dlp y ffmpeg...
+echo  [4/6] Verificando yt-dlp y ffmpeg...
 
 if not exist "%HOST_DIR%\yt-dlp.exe" (
-    echo   [!] yt-dlp.exe no encontrado. Descargando...
-    
-    set "YTDLP_URL=https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
-    
-    curl -L -o "%HOST_DIR%\yt-dlp.exe" "%YTDLP_URL%" 2>nul
-    
+    echo    [!] yt-dlp.exe falta. Descargando ultima version...
+    curl -L -o "%HOST_DIR%\yt-dlp.exe" "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" 2>nul
     if not exist "%HOST_DIR%\yt-dlp.exe" (
-        bitsadmin /transfer "YtdlpDownload" /priority high "%YTDLP_URL%" "%HOST_DIR%\yt-dlp.exe" >nul 2>nul
+        bitsadmin /transfer "YtdlpDL" /priority high "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" "%HOST_DIR%\yt-dlp.exe" >nul 2>nul
     )
-    
-    if not exist "%HOST_DIR%\yt-dlp.exe" (
-        echo   [ERROR] No se pudo descargar yt-dlp.exe
-        echo           Descargalo manualmente de: https://github.com/yt-dlp/yt-dlp/releases
-        echo           y colocalo en: %HOST_DIR%
+    if exist "%HOST_DIR%\yt-dlp.exe" (
+        echo    [OK] yt-dlp.exe descargado
+    ) else (
+        echo    [ERROR] No se pudo obtener yt-dlp.exe
+        echo            Descarga manual: https://github.com/yt-dlp/yt-dlp/releases
         pause
         exit /b 1
     )
-    echo   [OK] yt-dlp.exe descargado
 ) else (
-    echo   [OK] yt-dlp.exe encontrado
+    echo    [OK] yt-dlp.exe presente
 )
 
 if not exist "%HOST_DIR%\ffmpeg.exe" (
-    echo   [!] ffmpeg.exe no encontrado. Descargando...
+    echo    [!] ffmpeg.exe falta. Descargando...
+    set "FFMPEG_ZIP=%TEMP%\ffmpeg_full.zip"
+    set "FFMPEG_DIR=%TEMP%\ffmpeg_ext"
     
-    set "FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
-    set "FFMPEG_ZIP=%TEMP%\ffmpeg.zip"
-    set "FFMPEG_EXTRACT=%TEMP%\ffmpeg_extract"
-    
-    curl -L -o "%FFMPEG_ZIP%" "%FFMPEG_URL%" 2>nul
-    
-    if not exist "%FFMPEG_ZIP%" (
-        bitsadmin /transfer "FfmpegDownload" /priority high "%FFMPEG_URL%" "%FFMPEG_ZIP%" >nul 2>nul
+    curl -L -o "!FFMPEG_ZIP!" "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" 2>nul
+    if not exist "!FFMPEG_ZIP!" (
+        bitsadmin /transfer "FfmpegDL" /priority high "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" "!FFMPEG_ZIP!" >nul 2>nul
     )
     
-    if not exist "%FFMPEG_ZIP%" (
-        echo   [ERROR] No se pudo descargar ffmpeg.
-        echo           Descargalo manualmente de: https://ffmpeg.org/download.html
-        echo           Extrae ffmpeg.exe y colocalo en: %HOST_DIR%
+    if exist "!FFMPEG_ZIP!" (
+        echo    [*] Extrayendo ffmpeg.exe...
+        if exist "!FFMPEG_DIR!" rmdir /s /q "!FFMPEG_DIR!"
+        powershell -NoProfile -Command "Expand-Archive -Path '!FFMPEG_ZIP!' -DestinationPath '!FFMPEG_DIR!' -Force" 2>nul
+        for /r "!FFMPEG_DIR!" %%f in (ffmpeg.exe) do (
+            copy "%%f" "%HOST_DIR%\ffmpeg.exe" >nul 2>nul
+            goto :ffmpeg_ok
+        )
+        :ffmpeg_ok
+        del "!FFMPEG_ZIP!" >nul 2>nul
+        rmdir /s /q "!FFMPEG_DIR!" >nul 2>nul
+    )
+    
+    if exist "%HOST_DIR%\ffmpeg.exe" (
+        echo    [OK] ffmpeg.exe descargado y extraido
+    ) else (
+        echo    [ERROR] No se pudo obtener ffmpeg.exe
+        echo            Descarga manual: https://ffmpeg.org/download.html
         pause
         exit /b 1
     )
-    
-    echo   Extrayendo ffmpeg...
-    if exist "%FFMPEG_EXTRACT%" rmdir /s /q "%FFMPEG_EXTRACT%"
-    mkdir "%FFMPEG_EXTRACT%" >nul 2>nul
-    
-    powershell -Command "Expand-Archive -Path '%FFMPEG_ZIP%' -DestinationPath '%FFMPEG_EXTRACT%' -Force" 2>nul
-    
-    :: Buscar ffmpeg.exe dentro de la carpeta extraida
-    for /r "%FFMPEG_EXTRACT%" %%f in (ffmpeg.exe) do (
-        copy "%%f" "%HOST_DIR%\ffmpeg.exe" >nul 2>nul
-        goto :ffmpeg_found
-    )
-    
-    echo   [ERROR] No se encontro ffmpeg.exe en el archivo descargado.
-    echo           Descargalo manualmente de: https://ffmpeg.org/download.html
-    del "%FFMPEG_ZIP%" >nul 2>nul
-    rmdir /s /q "%FFMPEG_EXTRACT%" >nul 2>nul
-    pause
-    exit /b 1
-    
-    :ffmpeg_found
-    del "%FFMPEG_ZIP%" >nul 2>nul
-    rmdir /s /q "%FFMPEG_EXTRACT%" >nul 2>nul
-    
-    if not exist "%HOST_DIR%\ffmpeg.exe" (
-        echo   [ERROR] ffmpeg.exe no se copio correctamente.
-        pause
-        exit /b 1
-    )
-    echo   [OK] ffmpeg.exe descargado y extraido
 ) else (
-    echo   [OK] ffmpeg.exe encontrado
+    echo    [OK] ffmpeg.exe presente
 )
 
 :: ============================================
-:: PASO 4: Generar configuracion del Native Host
+:: PASO 5: Generar configuracion Native Host
 :: ============================================
 echo.
-echo [4/5] Generando configuracion...
+echo  [5/6] Generando configuracion del Native Host...
 
 set "JSON_FILE=%HOST_DIR%\com.descargador.ytdlp.json"
 set "ESCAPED_DIR=%HOST_DIR:\=\\%"
@@ -248,57 +256,107 @@ set "ESCAPED_DIR=%HOST_DIR:\=\\%"
     echo   ]
     echo }
 )
-
-echo   [OK] com.descargador.ytdlp.json generado
+echo    [OK] com.descargador.ytdlp.json generado
 
 :: ============================================
-:: PASO 5: Registrar en Windows
+:: PASO 6: Registrar en Windows
 :: ============================================
 echo.
-echo [5/5] Registrando en Windows...
+echo  [6/6] Registrando Native Host en Windows...
 
 reg add "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.descargador.ytdlp" /ve /t REG_SZ /d "%JSON_FILE%" /f >nul 2>nul
-
 if %errorlevel% neq 0 (
-    echo   [ERROR] No se pudo registrar. Intentando con permisos elevados...
-    powershell -Command "Start-Process reg -ArgumentList 'add','HKCU\Software\Google\Chrome\NativeMessagingHosts\com.descargador.ytdlp','/ve','/t','REG_SZ','/d','%JSON_FILE%','/f' -Verb RunAs" 2>nul
+    echo    [!] Intentando con permisos elevados...
+    powershell -NoProfile -Command "Start-Process reg -ArgumentList 'add','HKCU\Software\Google\Chrome\NativeMessagingHosts\com.descargador.ytdlp','/ve','/t','REG_SZ','/d','%JSON_FILE%','/f' -Verb RunAs" 2>nul
+)
+echo    [OK] Registro actualizado
+
+:: ============================================
+:: VERIFICACION FINAL
+:: ============================================
+echo.
+echo  ╔══════════════════════════════════════════════╗
+echo  ║   VERIFICACION FINAL                        ║
+echo  ╚══════════════════════════════════════════════╝
+echo.
+
+set "ERRORES=0"
+
+where python >nul 2>nul
+if %errorlevel% equ 0 (
+    echo    [OK] Python ............. disponible
+) else (
+    echo    [X]  Python ............. NO ENCONTRADO
+    set /a ERRORES+=1
 )
 
-echo   [OK] Registro de Windows actualizado
+where node >nul 2>nul
+if %errorlevel% equ 0 (
+    echo    [OK] Node.js ........... disponible
+) else (
+    echo    [X]  Node.js ........... NO ENCONTRADO (reinicia PC)
+    set /a ERRORES+=1
+)
 
-:: ============================================
-:: RESUMEN FINAL
-:: ============================================
-echo.
-echo ============================================
-echo   INSTALACION COMPLETADA EXITOSAMENTE
-echo ============================================
-echo.
-echo   Componentes:
-echo     [OK] Python
-echo     [OK] Node.js
-echo     [OK] yt-dlp.exe
-echo     [OK] ffmpeg.exe
-echo     [OK] Native Host registrado
-echo.
-echo   Ruta: %HOST_DIR%
-echo   ID extension: bmenjglifbckojodomkkbaoknjhejdbd
-echo.
-echo ============================================
-echo   ULTIMO PASO (unico paso manual):
-echo ============================================
-echo.
-echo   Se abrira Chrome en la pagina de extensiones.
-echo   Solo haz esto:
-echo     1. Activa "Modo desarrollador" (arriba a la derecha)
-echo     2. Clic en "Cargar descomprimida"
-echo     3. Selecciona esta carpeta:
-echo        %HOST_DIR%
-echo.
-echo   Si ya tenias la extension cargada, solo reinicia Chrome.
-echo.
-echo Presiona una tecla para abrir Chrome en extensiones...
-pause >nul
+if exist "%HOST_DIR%\yt-dlp.exe" (
+    echo    [OK] yt-dlp.exe ........ presente
+) else (
+    echo    [X]  yt-dlp.exe ........ FALTA
+    set /a ERRORES+=1
+)
 
-:: Abrir Chrome en la pagina de extensiones
-start "" "chrome" "chrome://extensions/"
+if exist "%HOST_DIR%\ffmpeg.exe" (
+    echo    [OK] ffmpeg.exe ........ presente
+) else (
+    echo    [X]  ffmpeg.exe ........ FALTA
+    set /a ERRORES+=1
+)
+
+if exist "%JSON_FILE%" (
+    echo    [OK] Native Host JSON .. generado
+) else (
+    echo    [X]  Native Host JSON .. FALTA
+    set /a ERRORES+=1
+)
+
+reg query "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.descargador.ytdlp" >nul 2>nul
+if %errorlevel% equ 0 (
+    echo    [OK] Registro Windows .. configurado
+) else (
+    echo    [X]  Registro Windows .. NO CONFIGURADO
+    set /a ERRORES+=1
+)
+
+echo.
+if !ERRORES! equ 0 (
+    echo  ╔══════════════════════════════════════════════╗
+    echo  ║   INSTALACION COMPLETADA - TODO LISTO        ║
+    echo  ╚══════════════════════════════════════════════╝
+    echo.
+    echo   Ruta: %HOST_DIR%
+    echo   ID:   bmenjglifbckojodomkkbaoknjhejdbd
+    echo.
+    echo  ─────────────────────────────────────────────
+    echo   ULTIMO PASO (unico manual):
+    echo   Se abrira Chrome en extensiones.
+    echo     1. Activa "Modo desarrollador"
+    echo     2. Clic "Cargar descomprimida"
+    echo     3. Selecciona: %HOST_DIR%
+    echo  ─────────────────────────────────────────────
+    echo.
+    echo  Presiona una tecla para abrir Chrome...
+    pause >nul
+    start "" "chrome" "chrome://extensions/"
+) else (
+    echo  ╔══════════════════════════════════════════════╗
+    echo  ║   INSTALACION CON ERRORES: !ERRORES! problema(s)     ║
+    echo  ╚══════════════════════════════════════════════╝
+    echo.
+    echo   Revisa los items marcados con [X] arriba.
+    echo   Si instalaste Python o Node.js, reinicia el PC
+    echo   y ejecuta este instalador de nuevo.
+    echo.
+    pause
+)
+
+endlocal
